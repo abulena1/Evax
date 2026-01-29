@@ -37,21 +37,6 @@
 | **Multiple Payloads** | Meterpreter, Shell, Staged/Stageless |
 | **Evasion Levels** | Low, Medium, Max - choose your stealth level |
 
-### Note: Why No AMSI Bypass?
-
-AMSI (Antimalware Scan Interface) **only monitors**:
-- PowerShell scripts
-- VBScript/JScript
-- Office VBA Macros
-
-AMSI **does NOT monitor** ASPX web shells because:
-- ASPX is compiled by IIS/ASP.NET engine
-- It runs as native .NET code, not script
-- AMSI has no visibility into this execution path
-
-**Therefore, AMSI bypass is NOT needed for ASPX shells!**
-
----
 
 ## Installation
 
